@@ -1,4 +1,14 @@
-# winrm4j
+# winrm4j (forked)
+
+---
+
+**Note: This project is forked from [cloudsoft/winrm4j](https://github.com/cloudsoft/winrm4j). This repository is now 
+our place for hosting, as it looked like the maintainers had abandoned it.**
+
+**Please see our [public fork](https://github.com/hlsolutions/winrm4j) 
+for the following upstream changes or provide upstream patches.**
+
+---
 
 `winrm4j` is a project which enables Java applications to execute batch or PowerShell commands on a remote Windows server 
 using [WinRM](https://msdn.microsoft.com/en-us/library/aa384426(v=vs.85).aspx)
