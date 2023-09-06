@@ -545,6 +545,52 @@ public class WinRmClient implements AutoCloseable {
         return new ShellCommand(winrm, shellId, operationTimeout, retryReceiveAfterOperationTimeout, locale);
     }
 
+    /**
+     * Creates an interactive Shell resource on the server, available for executing commands through the {@link InteractiveShellCommand} object.
+     * {@link InteractiveShellCommand#close()} the returned object after usage.
+     */
+    public InteractiveShellCommand createInteractiveShell() {
+        final Shell shell = new Shell();
+        shell.getInputStreams().add("stdin");
+        shell.getOutputStreams().add("stdout");
+        shell.getOutputStreams().add("stderr");
+        if (workingDirectory != null) {
+            shell.setWorkingDirectory(workingDirectory);
+        }
+        if (environment != null && !environment.isEmpty()) {
+            EnvironmentVariableList env = new EnvironmentVariableList();
+            List<EnvironmentVariable> vars = env.getVariable();
+            for (Entry<String, String> entry : environment.entrySet()) {
+                EnvironmentVariable var = new EnvironmentVariable();
+                var.setName(entry.getKey());
+                var.setValue(entry.getValue());
+                vars.add(var);
+            }
+            shell.setEnvironment(env);
+        }
+
+        final OptionSetType optSetCreate = new OptionSetType();
+        OptionType optNoProfile = new OptionType();
+        optNoProfile.setName("WINRS_NOPROFILE");
+        optNoProfile.setValue("FALSE");
+        optSetCreate.getOption().add(optNoProfile);
+        OptionType optCodepage = new OptionType();
+        optCodepage.setName("WINRS_CODEPAGE");
+        optCodepage.setValue(Integer.toString(codePage));
+        optSetCreate.getOption().add(optCodepage);
+
+        ResourceCreated resourceCreated = null;
+        try {
+            resourceCreated = winrm.create(shell, RESOURCE_URI, MAX_ENVELOPER_SIZE, operationTimeout, locale, optSetCreate);
+        } catch (RuntimeException e) {
+            RetryingProxyHandler.checkForRootErrorAuthorizationLoopAndPropagateAnnotated(e);
+            throw e;
+        }
+        String shellId = getShellId(resourceCreated);
+
+        return new InteractiveShellCommand(winrm, shellId, operationTimeout, retryReceiveAfterOperationTimeout, locale);
+    }
+
     private static String getShellId(ResourceCreated resourceCreated) {
         XPath xpath = XPathFactory.newInstance().newXPath();
         for (Element el : resourceCreated.getAny()) {
