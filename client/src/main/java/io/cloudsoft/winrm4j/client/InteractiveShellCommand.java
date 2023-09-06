@@ -7,6 +7,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import jakarta.xml.ws.soap.SOAPFaultException;
@@ -112,24 +113,27 @@ public class InteractiveShellCommand implements AutoCloseable {
         // reduce the prompt to a simple ">"
         sendCommand(commandId, "@echo off");
         sendCommand(commandId, "prompt $g");
-        receiveCommand(commandId, false, null, out, err);
+        receiveCommand(commandId, false, null, null, out, err);
 
         return new Session() {
             @Override
             public int execute(String command, List<String> arguments, Writer out, Writer err) {
+                String marker = UUID.randomUUID().toString();
                 StringBuilder cmd = new StringBuilder();
                 cmd.append(command);
                 for (String argument : arguments) {
                     cmd.append(" ").append(argument);
                 }
+                cmd.append(" & ")
+                        .append("(echo | set /p x=marker=) & echo ").append(marker);
                 sendCommand(commandId, cmd.toString());
-                receiveCommand(commandId, true, ">", out, err);
+                receiveCommand(commandId, true, ">", "marker=" + marker, out, err);
                 // extract status code
                 sendCommand(commandId, "echo %ErrorLevel%");
                 int exitCode = 0;
                 {
                     final var writer = new StringWriter();
-                    receiveCommand(commandId, true, ">", writer, Writer.nullWriter());
+                    receiveCommand(commandId, true, ">", null, writer, Writer.nullWriter());
                     try {
                         exitCode = Integer.parseInt(writer.toString().strip());
                     } catch (final Exception ignored) {
@@ -143,7 +147,7 @@ public class InteractiveShellCommand implements AutoCloseable {
             public void close() throws SOAPFaultException {
                 try {
                     sendCommand(commandId, "exit");
-                    receiveCommand(commandId, false, null, Writer.nullWriter(), Writer.nullWriter());
+                    receiveCommand(commandId, false, null, null, Writer.nullWriter(), Writer.nullWriter());
                 } catch (SOAPFaultException soapFault) {
                     assertFaultCode(soapFault, WSMAN_FAULT_CODE_SHELL_WAS_NOT_FOUND);
                 }
@@ -179,24 +183,26 @@ public class InteractiveShellCommand implements AutoCloseable {
         String commandId = cmdResponse.getCommandId();
         // reduce the prompt to a simple ">"
         sendCommand(commandId, "Function Prompt {\">\"}");
-        receiveCommand(commandId, false, null, out, err);
+        receiveCommand(commandId, false, null, null, out, err);
 
         return new Session() {
             @Override
             public int execute(String command, List<String> arguments, Writer out, Writer err) {
+                String marker = UUID.randomUUID().toString();
                 StringBuilder cmd = new StringBuilder();
                 cmd.append(command);
                 for (String argument : arguments) {
                     cmd.append(" ").append(argument);
                 }
+                cmd.append("; Write-Host -NoNewline \"marker=\"; Write-Host \"").append(marker).append("\"");
                 sendCommand(commandId, cmd.toString());
-                receiveCommand(commandId, true, ">", out, err);
+                receiveCommand(commandId, true, ">", "marker=" + marker, out, err);
                 // extract status code
                 sendCommand(commandId, "Write-Output \"exit=$? code=$LastExitCode\"");
                 int exitCode = 0;
                 {
                     final var writer = new StringWriter();
-                    receiveCommand(commandId, true, ">", writer, new StringWriter());
+                    receiveCommand(commandId, true, ">", null, writer, Writer.nullWriter());
                     for (String str : writer.toString().strip().split(" ")) {
                         String[] val = str.split("=", 2);
                         if (val.length != 2) {
@@ -227,7 +233,7 @@ public class InteractiveShellCommand implements AutoCloseable {
             public void close() throws SOAPFaultException {
                 try {
                     sendCommand(commandId, "exit");
-                    receiveCommand(commandId, false, null, Writer.nullWriter(), Writer.nullWriter());
+                    receiveCommand(commandId, false, null, null, Writer.nullWriter(), Writer.nullWriter());
                 } catch (SOAPFaultException soapFault) {
                     assertFaultCode(soapFault, WSMAN_FAULT_CODE_SHELL_WAS_NOT_FOUND);
                 }
@@ -253,6 +259,7 @@ public class InteractiveShellCommand implements AutoCloseable {
         optKeepalive.setValue("TRUE");
         optSetCmd.getOption().add(optKeepalive);
         try {
+            LOG.trace("Sending command data {}: {}", commandId, data);
             winrm.send(send, WinRmClient.RESOURCE_URI, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
         } catch (SOAPFaultException soapFault) {
             assertFaultCode(soapFault, WSMAN_FAULT_CODE_OPERATION_TIMEOUT_EXPIRED,
@@ -264,6 +271,7 @@ public class InteractiveShellCommand implements AutoCloseable {
                               String stderr,
                               boolean skipFirstOut,
                               String removePrompt,
+                              String waitFor,
                               Writer out,
                               Writer err) {
 
@@ -280,6 +288,9 @@ public class InteractiveShellCommand implements AutoCloseable {
                         if (str.isEmpty()) {
                             continue;
                         }
+                    }
+                    if (waitFor != null && str.contains(waitFor)) {
+                        continue;
                     }
                     out.write(str + "\r\n");
                 }
@@ -300,7 +311,12 @@ public class InteractiveShellCommand implements AutoCloseable {
 
     }
 
-    private Optional<Integer> receiveCommand(String commandId, boolean skipFirstOut, String removePrompt, Writer out, Writer err) {
+    private Optional<Integer> receiveCommand(String commandId,
+                                             boolean skipFirstOut,
+                                             String removePrompt,
+                                             String waitFor,
+                                             Writer out,
+                                             Writer err) {
 
         final var tempOut = new StringWriter();
         final var tempErr = new StringWriter();
@@ -326,11 +342,15 @@ public class InteractiveShellCommand implements AutoCloseable {
                 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-wsmv/bd5802af-51ad-4f1b-9a5c-7aa499d5eee9
                 // either Done, Running, or Pending
                 if (COMMAND_STATE_DONE.equals(state.getState())) {
-                    processStreamResults(tempOut.toString(), tempErr.toString(), skipFirstOut, removePrompt, out, err);
+                    processStreamResults(tempOut.toString(), tempErr.toString(), skipFirstOut, removePrompt, waitFor, out, err);
                     return Optional.of(state.getExitCode().intValue());
                 }
                 if (COMMAND_STATE_RUNNING.equals(state.getState())) {
-                    processStreamResults(tempOut.toString(), tempErr.toString(), skipFirstOut, removePrompt, out, err);
+                    LOG.trace("STD: " + tempOut.toString());
+                    if (waitFor != null && !tempOut.toString().contains(waitFor)) {
+                        continue;
+                    }
+                    processStreamResults(tempOut.toString(), tempErr.toString(), skipFirstOut, removePrompt, waitFor, out, err);
                     return Optional.empty();
                 } else {
                     LOG.debug("{} is not done. Response it received: {} / {}", this, state.getState(), receiveResponse);
