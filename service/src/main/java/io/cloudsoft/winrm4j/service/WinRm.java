@@ -6,6 +6,8 @@ import io.cloudsoft.winrm4j.service.enumerate.PullRequest;
 import io.cloudsoft.winrm4j.service.enumerate.PullResponse;
 import io.cloudsoft.winrm4j.service.shell.Receive;
 import io.cloudsoft.winrm4j.service.shell.ReceiveResponse;
+import io.cloudsoft.winrm4j.service.shell.Send;
+import io.cloudsoft.winrm4j.service.shell.SendResponse;
 import io.cloudsoft.winrm4j.service.shell.Shell;
 import io.cloudsoft.winrm4j.service.shell.SignalResponse;
 import io.cloudsoft.winrm4j.service.transfer.ResourceCreated;
@@ -35,6 +37,29 @@ import java.util.List;
 // Soap 1.2 (uses the required application/soap+xml content type)
 @BindingType("http://www.w3.org/2003/05/soap/bindings/HTTP/")
 public class WinRm {
+
+    @WebMethod(operationName = "Send", action = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Send")
+    @WebResult(name = "SendResponse", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell")
+    @Action(input = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Send", output = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/SendResponse")
+    @SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.BARE)
+    public SendResponse send(
+            @WebParam(name = "Send", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell")
+            Send send,
+            @WebParam(name = "ResourceURI", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
+            String resourceURI,
+            @WebParam(name = "MaxEnvelopeSize", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
+            int maxEnvelopeSize,
+            @WebParam(name = "OperationTimeout", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
+            String operationTimeout,
+            @WebParam(name = "Locale", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
+            Locale locale,
+            @WebParam(name = "SelectorSet", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
+            SelectorSetType selectorSet,
+            @WebParam(name = "OptionSet", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
+            OptionSetType optionSet
+    ) {
+        return null;
+    }
 
     @WebMethod(operationName = "Receive", action = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Receive")
     @WebResult(name="ReceiveResponse", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell")

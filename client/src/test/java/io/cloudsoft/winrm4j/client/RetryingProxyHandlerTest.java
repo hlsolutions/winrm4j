@@ -13,35 +13,34 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-
 import jakarta.xml.ws.WebServiceException;
-
-import io.cloudsoft.winrm4j.client.enumeration.EnumerateResponse;
-import io.cloudsoft.winrm4j.client.enumeration.PullResponse;
-import io.cloudsoft.winrm4j.client.wsman.Enumerate;
-import io.cloudsoft.winrm4j.client.wsman.Pull;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicates;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-
+import io.cloudsoft.winrm4j.client.enumeration.EnumerateResponse;
+import io.cloudsoft.winrm4j.client.enumeration.PullResponse;
 import io.cloudsoft.winrm4j.client.retry.RetryPolicy;
 import io.cloudsoft.winrm4j.client.retry.SimpleCounterRetryPolicy;
 import io.cloudsoft.winrm4j.client.shell.CommandLine;
 import io.cloudsoft.winrm4j.client.shell.Receive;
 import io.cloudsoft.winrm4j.client.shell.ReceiveResponse;
+import io.cloudsoft.winrm4j.client.shell.Send;
+import io.cloudsoft.winrm4j.client.shell.SendResponse;
 import io.cloudsoft.winrm4j.client.shell.Shell;
 import io.cloudsoft.winrm4j.client.transfer.ResourceCreated;
 import io.cloudsoft.winrm4j.client.wsman.CommandResponse;
+import io.cloudsoft.winrm4j.client.wsman.Enumerate;
 import io.cloudsoft.winrm4j.client.wsman.Locale;
 import io.cloudsoft.winrm4j.client.wsman.OptionSetType;
+import io.cloudsoft.winrm4j.client.wsman.Pull;
 import io.cloudsoft.winrm4j.client.wsman.SelectorSetType;
 import io.cloudsoft.winrm4j.client.wsman.Signal;
 import io.cloudsoft.winrm4j.client.wsman.SignalResponse;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 public class RetryingProxyHandlerTest {
 
@@ -179,6 +178,13 @@ public class RetryingProxyHandlerTest {
 			RecordedCall call = new RecordedCall("receive", Arrays.asList(receive, resourceURI, maxEnvelopeSize, operationTimeout, locale, selectorSet, optionSet));
 			calls.add(call);
 			return (ReceiveResponse) handler.apply(call);
+		}
+
+		@Override
+		public SendResponse send(Send send, String resourceURI, int maxEnvelopeSize, String operationTimeout, Locale locale, SelectorSetType selectorSet, OptionSetType optionSet) {
+			RecordedCall call = new RecordedCall("send", Arrays.asList(send, resourceURI, maxEnvelopeSize, operationTimeout, locale, selectorSet, optionSet));
+			calls.add(call);
+			return (SendResponse) handler.apply(call);
 		}
 
 		@Override
