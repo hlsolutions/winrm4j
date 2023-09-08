@@ -83,7 +83,7 @@ public class InteractiveShellCommand implements AutoCloseable {
 
     public interface Session extends Closeable {
 
-        int execute(String command, List<String> arguments, Writer out, Writer err);
+        int execute(String command, Writer out, Writer err);
 
         @Override
         void close() throws SOAPFaultException;
@@ -117,16 +117,12 @@ public class InteractiveShellCommand implements AutoCloseable {
 
         return new Session() {
             @Override
-            public int execute(String command, List<String> arguments, Writer out, Writer err) {
+            public int execute(String command, Writer out, Writer err) {
                 String marker = UUID.randomUUID().toString();
-                StringBuilder cmd = new StringBuilder();
-                cmd.append(command);
-                for (String argument : arguments) {
-                    cmd.append(" ").append(argument);
-                }
-                cmd.append(" & ")
-                        .append("(echo | set /p x=marker=) & echo ").append(marker);
-                sendCommand(commandId, cmd.toString());
+                String cmd = command +
+                        " & " +
+                        "(echo | set /p x=marker=) & echo " + marker;
+                sendCommand(commandId, cmd);
                 receiveCommand(commandId, true, ">", "marker=" + marker, out, err);
                 // extract status code
                 sendCommand(commandId, "echo %ErrorLevel%");
@@ -187,15 +183,11 @@ public class InteractiveShellCommand implements AutoCloseable {
 
         return new Session() {
             @Override
-            public int execute(String command, List<String> arguments, Writer out, Writer err) {
+            public int execute(String command, Writer out, Writer err) {
                 String marker = UUID.randomUUID().toString();
-                StringBuilder cmd = new StringBuilder();
-                cmd.append(command);
-                for (String argument : arguments) {
-                    cmd.append(" ").append(argument);
-                }
-                cmd.append("; Write-Host -NoNewline \"marker=\"; Write-Host \"").append(marker).append("\"");
-                sendCommand(commandId, cmd.toString());
+                String cmd = command +
+                        "; Write-Host -NoNewline \"marker=\"; Write-Host \"" + marker + "\"";
+                sendCommand(commandId, cmd);
                 receiveCommand(commandId, true, ">", "marker=" + marker, out, err);
                 // extract status code
                 sendCommand(commandId, "Write-Output \"exit=$? code=$LastExitCode\"");
