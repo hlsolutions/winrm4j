@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import jakarta.xml.ws.soap.SOAPFaultException;
 
 import io.cloudsoft.winrm4j.client.shell.CommandLine;
@@ -117,7 +116,6 @@ public class InteractiveShellCommand implements AutoCloseable {
                 false,
                 null,
                 null,
-                null,
                 out,
                 err);
 
@@ -131,8 +129,7 @@ public class InteractiveShellCommand implements AutoCloseable {
                 sendCommand(commandId, cmd);
                 receiveCommand(commandId,
                         true,
-                        "> ",
-                        marker,
+                        ">",
                         "marker=" + marker,
                         out,
                         err);
@@ -143,8 +140,7 @@ public class InteractiveShellCommand implements AutoCloseable {
                     final var writer = new StringWriter();
                     receiveCommand(commandId,
                             true,
-                            "> ",
-                            null,
+                            ">",
                             null,
                             writer,
                             Writer.nullWriter());
@@ -163,7 +159,6 @@ public class InteractiveShellCommand implements AutoCloseable {
                     sendCommand(commandId, "exit");
                     receiveCommand(commandId,
                             false,
-                            null,
                             null,
                             null,
                             Writer.nullWriter(),
@@ -207,7 +202,6 @@ public class InteractiveShellCommand implements AutoCloseable {
                 false,
                 null,
                 null,
-                null,
                 out,
                 err);
 
@@ -220,8 +214,7 @@ public class InteractiveShellCommand implements AutoCloseable {
                 sendCommand(commandId, cmd);
                 receiveCommand(commandId,
                         true,
-                        "> ",
-                        marker,
+                        ">",
                         "marker=" + marker,
                         out,
                         err);
@@ -232,8 +225,7 @@ public class InteractiveShellCommand implements AutoCloseable {
                     final var writer = new StringWriter();
                     receiveCommand(commandId,
                             true,
-                            "> ",
-                            null,
+                            ">",
                             null,
                             writer,
                             Writer.nullWriter());
@@ -269,7 +261,6 @@ public class InteractiveShellCommand implements AutoCloseable {
                     sendCommand(commandId, "exit");
                     receiveCommand(commandId,
                             false,
-                            null,
                             null,
                             null,
                             Writer.nullWriter(),
@@ -310,43 +301,35 @@ public class InteractiveShellCommand implements AutoCloseable {
     /**
      * Process the received stream outputs for boilerplate and verbose data.
      *
-     * @param stdout                received stdout
-     * @param stderr                received stderr
-     * @param skipFirstOut          skip the first line of stdout (used because of the function prompt)
-     * @param promptPrefix          ignore lines which starts with this prompt
-     * @param promptPrefixThreshold ignore lines until this is found
-     * @param waitFor               marker until the output should be read
-     * @param out                   destination writer for stdout
-     * @param err                   destination writer for stderr
+     * @param stdout       received stdout
+     * @param stderr       received stderr
+     * @param skipFirstOut skip the first line of stdout (used because of the function prompt)
+     * @param promptPrefix ignore lines which starts with this prompt
+     * @param waitFor      marker until the output should be read
+     * @param out          destination writer for stdout
+     * @param err          destination writer for stderr
      */
     static void processStreamResults(String stdout,
                                      String stderr,
                                      boolean skipFirstOut,
                                      String promptPrefix,
-                                     String promptPrefixThreshold,
                                      String waitFor,
                                      Writer out,
                                      Writer err) {
 
         if (!stdout.isEmpty()) {
             try {
-                String[] split = stdout.split(Pattern.quote("\r\n"));
-                boolean promptPrefixCompleted = false;
+                String[] split = stdout.split("\r?\n");
                 for (int i = 0; i < split.length; i++) {
                     if (skipFirstOut && i == 0) {
                         continue;
                     }
                     String str = split[i];
-                    if (!promptPrefixCompleted) {
-                        if (promptPrefixThreshold != null && str.contains(promptPrefixThreshold)) {
-                            promptPrefixCompleted = true;
-                        }
-                        if (promptPrefix != null && str.startsWith(promptPrefix)) {
-                            continue;
-                        }
+                    if (promptPrefix != null && str.startsWith(promptPrefix)) {
+                        continue;
                     }
                     if (waitFor != null && str.contains(waitFor)) {
-                        continue;
+                        return;
                     }
                     out.write(str + "\r\n");
                 }
@@ -370,7 +353,6 @@ public class InteractiveShellCommand implements AutoCloseable {
     private Optional<Integer> receiveCommand(String commandId,
                                              boolean skipFirstOut,
                                              String promptPrefix,
-                                             String promptPrefixThreshold,
                                              String waitFor,
                                              Writer out,
                                              Writer err) {
@@ -404,11 +386,10 @@ public class InteractiveShellCommand implements AutoCloseable {
                 // Pending means the command/shell is busy
                 // Running means the command/shell is ready (which means the interactive command probably finished)
                 if (COMMAND_STATE_DONE.equals(state.getState())) {
-                    processStreamResults(tempOut.toString(),
+                    processStreamResults(">" + tempOut.toString(),
                             tempErr.toString(),
                             skipFirstOut,
                             promptPrefix,
-                            promptPrefixThreshold,
                             waitFor,
                             out,
                             err);
@@ -419,11 +400,10 @@ public class InteractiveShellCommand implements AutoCloseable {
                     if (waitFor != null && !tempOut.toString().contains(waitFor)) {
                         continue;
                     }
-                    processStreamResults(tempOut.toString(),
+                    processStreamResults(">" + tempOut.toString(),
                             tempErr.toString(),
                             skipFirstOut,
                             promptPrefix,
-                            promptPrefixThreshold,
                             waitFor,
                             out,
                             err);

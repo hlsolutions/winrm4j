@@ -22,7 +22,6 @@ public class InteractiveShellCommandTest {
                 "",
                 false,
                 null,
-                null,
                 "marker=3908f554-a5f7-48e6-8ca0-5201bcaecf09",
                 stdout,
                 stderr
@@ -50,7 +49,6 @@ public class InteractiveShellCommandTest {
                 "",
                 true,
                 null,
-                null,
                 "marker=3908f554-a5f7-48e6-8ca0-5201bcaecf09",
                 stdout,
                 stderr
@@ -76,8 +74,7 @@ public class InteractiveShellCommandTest {
                         """,
                 "",
                 true,
-                "> ",
-                "3908f554-a5f7-48e6-8ca0-5201bcaecf09",
+                ">",
                 "marker=3908f554-a5f7-48e6-8ca0-5201bcaecf09",
                 stdout,
                 stderr
@@ -105,8 +102,7 @@ public class InteractiveShellCommandTest {
                         """,
                 "",
                 true,
-                "> ",
-                "3908f554-a5f7-48e6-8ca0-5201bcaecf09",
+                ">",
                 "marker=3908f554-a5f7-48e6-8ca0-5201bcaecf09",
                 stdout,
                 stderr
@@ -115,35 +111,6 @@ public class InteractiveShellCommandTest {
                 stdout.toString(),
                 """
                         Hello World\r
-                        """,
-                "invalid stdout"
-        );
-    }
-
-    @Test
-    public void skipFirstLineIgnorePromptAndWaitFor_WithFakePromptAfterMarker() {
-        final var stdout = new StringWriter();
-        final var stderr = new StringWriter();
-        processStreamResults(
-                """
-                        Function Prompt {">"}\r
-                        > Write-Host -NoNewline "> Hello"\r
-                        > Write-Host " World"; Write-Host -NoNewline "marker="; Write-Host "3908f554-a5f7-48e6-8ca0-5201bcaecf09"\r
-                        > Hello World\r
-                        marker=3908f554-a5f7-48e6-8ca0-5201bcaecf09\r
-                        """,
-                "",
-                true,
-                "> ",
-                "3908f554-a5f7-48e6-8ca0-5201bcaecf09",
-                "marker=3908f554-a5f7-48e6-8ca0-5201bcaecf09",
-                stdout,
-                stderr
-        );
-        assertEquals(
-                stdout.toString(),
-                """
-                        > Hello World\r
                         """,
                 "invalid stdout"
         );
