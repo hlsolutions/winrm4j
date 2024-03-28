@@ -327,22 +327,28 @@ public class InteractiveShellCommand implements AutoCloseable {
 
             try {
                 numberOfReceiveCalls++;
+                // Fetch the next batch of command's response (maybe not the last one)...
                 ReceiveResponse receiveResponse = winrm.receive(receive, WinRmClient.RESOURCE_URI, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
+                // ... and process the result into the temp writers.
                 getStreams(receiveResponse, tempOut, tempErr);
 
                 CommandStateType state = receiveResponse.getCommandState();
                 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-wsmv/bd5802af-51ad-4f1b-9a5c-7aa499d5eee9
                 // either Done, Running, or Pending
+                // Done means the command/shell is done (completed)
+                // Pending means the command/shell is busy
+                // Running means the command/shell is ready (which means the interactive command probably finished)
                 if (COMMAND_STATE_DONE.equals(state.getState())) {
                     processStreamResults(tempOut.toString(), tempErr.toString(), skipFirstOut, removePrompt, waitFor, out, err);
+                    LOG.trace("Received final stdout: " + tempOut.toString());
                     return Optional.of(state.getExitCode().intValue());
                 }
                 if (COMMAND_STATE_RUNNING.equals(state.getState())) {
-                    LOG.trace("STD: " + tempOut.toString());
                     if (waitFor != null && !tempOut.toString().contains(waitFor)) {
                         continue;
                     }
                     processStreamResults(tempOut.toString(), tempErr.toString(), skipFirstOut, removePrompt, waitFor, out, err);
+                    LOG.trace("Received final stdout: " + tempOut.toString());
                     return Optional.empty();
                 } else {
                     LOG.debug("{} is not done. Response it received: {} / {}", this, state.getState(), receiveResponse);
@@ -391,18 +397,27 @@ public class InteractiveShellCommand implements AutoCloseable {
         return numberOfReceiveCalls;
     }
 
-    private void getStreams(ReceiveResponse receiveResponse, Writer out, Writer err) {
-        List<StreamType> streams = receiveResponse.getStream();
+    /**
+     * This reads the streams of the given response and applies their values to the
+     * specified writers. Supported are streams of the names <code>stdout</code> and <code>stderr</code>.
+     *
+     * @param receiveResponse the received response containing the shells stream outputs
+     * @param out             destination stdout writer
+     * @param err             destination stderr writer
+     */
+    private void getStreams(final ReceiveResponse receiveResponse, final Writer out, final Writer err) {
+        final List<StreamType> streams = receiveResponse.getStream();
         boolean alreadySkippedOut = false;
-        for (StreamType s : streams) {
+        for (final StreamType s : streams) {
             byte[] value = s.getValue();
             if (value == null) continue;
             if (out != null && "stdout".equals(s.getName())) {
-
                 try {
                     //TODO use passed locale?
                     if (value.length > 0) {
-                        out.write(new String(value));
+                        final var str = new String(value);
+                        LOG.trace("received part stdout: {}", str);
+                        out.write(str);
                         out.flush();
                     }
                     if (Boolean.TRUE.equals(s.isEnd())) {
@@ -416,7 +431,9 @@ public class InteractiveShellCommand implements AutoCloseable {
                 try {
                     //TODO use passed locale?
                     if (value.length > 0) {
-                        err.write(new String(value));
+                        final var str = new String(value);
+                        LOG.trace("received part stderr: {}", str);
+                        err.write(str);
                         err.flush();
                     }
                     if (Boolean.TRUE.equals(s.isEnd())) {
