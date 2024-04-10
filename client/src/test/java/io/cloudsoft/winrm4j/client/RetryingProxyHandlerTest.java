@@ -20,6 +20,7 @@ import com.google.common.base.Predicates;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import io.cloudsoft.winrm4j.client.config.Config;
 import io.cloudsoft.winrm4j.client.enumeration.EnumerateResponse;
 import io.cloudsoft.winrm4j.client.enumeration.PullResponse;
 import io.cloudsoft.winrm4j.client.retry.RetryPolicy;
@@ -220,6 +221,13 @@ public class RetryingProxyHandlerTest {
 			RecordedCall call = new RecordedCall("enumeratePull", Arrays.asList(pull, resourceURI, sessionId, maxEnvelopeSize, operationTimeout, locale, optionSet));
 			calls.add(call);
 			return (PullResponse) handler.apply(call);
+		}
+
+		@Override
+		public Config config(String resourceURI) {
+			RecordedCall call = new RecordedCall("config", Arrays.asList(resourceURI));
+			calls.add(call);
+			return (Config) handler.apply(call);
 		}
 	}
 }

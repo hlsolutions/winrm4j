@@ -499,6 +499,13 @@ public class WinRmClient implements AutoCloseable {
 
     }
 
+    public WsmanConfig getWsmanConfig() {
+        final var config = winrm.config("http://schemas.microsoft.com/wbem/wsman/1/config");
+        return new WsmanConfig(
+                config.getMaxEnvelopeSizekb()
+        );
+    }
+
     /**
      * Creates a Shell resource on the server, available for executing commands through the {@link ShellCommand} object.
      * {@link ShellCommand#close()} the returned object after usage.

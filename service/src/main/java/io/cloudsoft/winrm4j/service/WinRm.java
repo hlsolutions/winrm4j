@@ -19,6 +19,7 @@ import io.cloudsoft.winrm4j.service.shell.Send;
 import io.cloudsoft.winrm4j.service.shell.SendResponse;
 import io.cloudsoft.winrm4j.service.shell.Shell;
 import io.cloudsoft.winrm4j.service.shell.SignalResponse;
+import io.cloudsoft.winrm4j.service.config.ConfigResponse;
 import io.cloudsoft.winrm4j.service.transfer.ResourceCreated;
 import io.cloudsoft.winrm4j.service.wsman.CommandResponse;
 import io.cloudsoft.winrm4j.service.wsman.Locale;
@@ -221,6 +222,17 @@ public class WinRm {
         Locale locale,
         @WebParam(name = "OptionSet", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         OptionSetType optionSet
+    ) {
+        return null;
+    }
+
+    @WebMethod(operationName = "Config", action = "http://schemas.xmlsoap.org/ws/2004/09/transfer/Get")
+    @Action(input = "http://schemas.xmlsoap.org/ws/2004/09/transfer/Get", output = "http://schemas.xmlsoap.org/ws/2004/09/transfer/GetResponse")
+    @WebResult(name = "ConfigResponse", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/config", partName = "ConfigResponse")
+    @SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.BARE)
+    public ConfigResponse getConfig(
+        @WebParam(name = "ResourceURI", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
+        String resourceURI
     ) {
         return null;
     }

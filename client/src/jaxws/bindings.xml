@@ -32,5 +32,11 @@
       <jaxb:package name="io.cloudsoft.winrm4j.client.enumeration" />
     </jaxb:schemaBindings>
   </jaxws:bindings>
+  <jaxws:bindings
+    node="wsdl:definitions/wsdl:types/xs:schema[@targetNamespace='http://schemas.microsoft.com/wbem/wsman/1/config']">
+    <jaxb:schemaBindings>
+      <jaxb:package name="io.cloudsoft.winrm4j.client.config" />
+    </jaxb:schemaBindings>
+  </jaxws:bindings>
 
 </jaxws:bindings>
