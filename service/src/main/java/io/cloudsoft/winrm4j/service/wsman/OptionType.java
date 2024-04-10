@@ -1,6 +1,7 @@
 
 package io.cloudsoft.winrm4j.service.wsman;
 
+import javax.xml.namespace.QName;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
@@ -9,11 +10,13 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlValue;
 import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import javax.xml.namespace.QName;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OptionType", propOrder = {
+    "name",
+    "mustComply",
+    "type",
     "value"
 })
 public class OptionType {
