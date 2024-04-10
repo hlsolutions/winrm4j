@@ -1,20 +1,5 @@
 package io.cloudsoft.winrm4j.service;
 
-import io.cloudsoft.winrm4j.service.enumerate.EnumerateRequest;
-import io.cloudsoft.winrm4j.service.enumerate.EnumerateResponse;
-import io.cloudsoft.winrm4j.service.enumerate.PullRequest;
-import io.cloudsoft.winrm4j.service.enumerate.PullResponse;
-import io.cloudsoft.winrm4j.service.shell.Receive;
-import io.cloudsoft.winrm4j.service.shell.ReceiveResponse;
-import io.cloudsoft.winrm4j.service.shell.Send;
-import io.cloudsoft.winrm4j.service.shell.SendResponse;
-import io.cloudsoft.winrm4j.service.shell.Shell;
-import io.cloudsoft.winrm4j.service.shell.SignalResponse;
-import io.cloudsoft.winrm4j.service.transfer.ResourceCreated;
-import io.cloudsoft.winrm4j.service.wsman.Locale;
-import io.cloudsoft.winrm4j.service.wsman.OptionSetType;
-import io.cloudsoft.winrm4j.service.wsman.SelectorSetType;
-import io.cloudsoft.winrm4j.service.wsman.Signal;
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebParam;
 import jakarta.jws.WebResult;
@@ -22,9 +7,24 @@ import jakarta.jws.WebService;
 import jakarta.jws.soap.SOAPBinding;
 import jakarta.xml.ws.Action;
 import jakarta.xml.ws.BindingType;
-import jakarta.xml.ws.RequestWrapper;
 
-import java.util.List;
+import io.cloudsoft.winrm4j.service.enumerate.EnumerateRequest;
+import io.cloudsoft.winrm4j.service.enumerate.EnumerateResponse;
+import io.cloudsoft.winrm4j.service.enumerate.PullRequest;
+import io.cloudsoft.winrm4j.service.enumerate.PullResponse;
+import io.cloudsoft.winrm4j.service.shell.CommandLine;
+import io.cloudsoft.winrm4j.service.shell.Receive;
+import io.cloudsoft.winrm4j.service.shell.ReceiveResponse;
+import io.cloudsoft.winrm4j.service.shell.Send;
+import io.cloudsoft.winrm4j.service.shell.SendResponse;
+import io.cloudsoft.winrm4j.service.shell.Shell;
+import io.cloudsoft.winrm4j.service.shell.SignalResponse;
+import io.cloudsoft.winrm4j.service.transfer.ResourceCreated;
+import io.cloudsoft.winrm4j.service.wsman.CommandResponse;
+import io.cloudsoft.winrm4j.service.wsman.Locale;
+import io.cloudsoft.winrm4j.service.wsman.OptionSetType;
+import io.cloudsoft.winrm4j.service.wsman.SelectorSetType;
+import io.cloudsoft.winrm4j.service.wsman.Signal;
 
 //https://msdn.microsoft.com/en-us/library/cc251731.aspx
 //https://msdn.microsoft.com/en-us/library/cc251526.aspx
@@ -47,6 +47,8 @@ public class WinRm {
             Send send,
             @WebParam(name = "ResourceURI", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
             String resourceURI,
+            @WebParam(partName = "SessionId", name = "SessionId", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd", header = true)
+            String sessionId,
             @WebParam(name = "MaxEnvelopeSize", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
             int maxEnvelopeSize,
             @WebParam(name = "OperationTimeout", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
@@ -70,6 +72,8 @@ public class WinRm {
         Receive receive,
         @WebParam(name = "ResourceURI", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         String resourceURI,
+        @WebParam(partName = "SessionId", name = "SessionId", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd", header = true)
+        String sessionId,
         @WebParam(name = "MaxEnvelopeSize", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         int maxEnvelopeSize,
         @WebParam(name = "OperationTimeout", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
@@ -91,6 +95,8 @@ public class WinRm {
     public void delete(
         @WebParam(name = "ResourceURI", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         String resourceURI,
+        @WebParam(partName = "SessionId", name = "SessionId", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd", header = true)
+        String sessionId,
         @WebParam(name = "MaxEnvelopeSize", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         int maxEnvelopeSize,
         @WebParam(name = "OperationTimeout", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
@@ -110,6 +116,8 @@ public class WinRm {
         Signal signal,
         @WebParam(name = "ResourceURI", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         String resourceURI,
+        @WebParam(partName = "SessionId", name = "SessionId", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd", header = true)
+        String sessionId,
         @WebParam(name = "MaxEnvelopeSize", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         int maxEnvelopeSize,
         @WebParam(name = "OperationTimeout", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
@@ -123,16 +131,16 @@ public class WinRm {
     }
 
     @WebMethod(operationName = "Command", action="http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Command")
-    @WebResult(name="CommandId", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell")
-    @RequestWrapper(localName="CommandLine", targetNamespace="http://schemas.microsoft.com/wbem/wsman/1/windows/shell", partName = "body")
+    @WebResult(name="CommandResponse", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell")
     @Action(input = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Command", output = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandResponse")
-    public String command(
-        @WebParam(name = "Command", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell")
-        String command,
-        @WebParam(name = "Arguments", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell")
-        List<String> arguments,
+    @SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.BARE)
+    public CommandResponse command(
+        @WebParam(name = "CommandLine", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell")
+        CommandLine commandLine,
         @WebParam(name = "ResourceURI", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         String resourceURI,
+        @WebParam(partName = "SessionId", name = "SessionId", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd", header = true)
+        String sessionId,
         @WebParam(name = "MaxEnvelopeSize", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         int maxEnvelopeSize,
         @WebParam(name = "OperationTimeout", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
@@ -156,6 +164,8 @@ public class WinRm {
         Shell shell,
         @WebParam(name = "ResourceURI", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         String resourceURI,
+        @WebParam(partName = "SessionId", name = "SessionId", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd", header = true)
+        String sessionId,
         @WebParam(name = "MaxEnvelopeSize", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         int maxEnvelopeSize,
         @WebParam(name = "OperationTimeout", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
@@ -178,7 +188,7 @@ public class WinRm {
         EnumerateRequest enumerate,
         @WebParam(name = "ResourceURI", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         String resourceURI,
-        @WebParam(name = "SessionId", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
+        @WebParam(partName = "SessionId", name = "SessionId", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd", header = true)
         String sessionId,
         @WebParam(name = "MaxEnvelopeSize", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         int maxEnvelopeSize,
@@ -201,7 +211,7 @@ public class WinRm {
         PullRequest pull,
         @WebParam(name = "ResourceURI", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         String resourceURI,
-        @WebParam(name = "SessionId", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
+        @WebParam(partName = "SessionId", name = "SessionId", targetNamespace = "http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd", header = true)
         String sessionId,
         @WebParam(name = "MaxEnvelopeSize", targetNamespace = "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd", header = true)
         int maxEnvelopeSize,

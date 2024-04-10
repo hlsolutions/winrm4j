@@ -89,10 +89,10 @@ public class EnumerateCommand implements AutoCloseable {
 				enumerate.getFilter().setDialect(dialect);
 				enumerate.setMaxElements(maxElements);
 				return winrm.enumerate(
-						enumerate,
-						resourceUri,
+                        enumerate,
+                        resourceUri,
 						sessionId,
-						MAX_ENVELOPER_SIZE,
+                        MAX_ENVELOPER_SIZE,
 						operationTimeout.get(),
 						locale.get(),
 						new OptionSetType()

@@ -91,7 +91,7 @@ public class ShellCommand implements AutoCloseable {
 
         numberOfReceiveCalls = 0;
 
-        CommandResponse cmdResponse = winrm.command(cmdLine, WinRmClient.RESOURCE_URI, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
+        CommandResponse cmdResponse = winrm.command(cmdLine, WinRmClient.RESOURCE_URI, null, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
 
         String commandId = cmdResponse.getCommandId();
 
@@ -121,7 +121,7 @@ public class ShellCommand implements AutoCloseable {
 
             try {
                 numberOfReceiveCalls++;
-                ReceiveResponse receiveResponse = winrm.receive(receive, WinRmClient.RESOURCE_URI, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
+                ReceiveResponse receiveResponse = winrm.receive(receive, WinRmClient.RESOURCE_URI, null, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
                 getStreams(receiveResponse, out, err);
 
                 CommandStateType state = receiveResponse.getCommandState();
@@ -215,14 +215,14 @@ public class ShellCommand implements AutoCloseable {
         signal.setCommandId(commandId);
         signal.setCode("http://schemas.microsoft.com/wbem/wsman/1/windows/shell/signal/terminate");
 
-        winrm.signal(signal, WinRmClient.RESOURCE_URI, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector);
+        winrm.signal(signal, WinRmClient.RESOURCE_URI, null, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector);
     }
 
 
     @Override
     public void close() {
         try {
-            winrm.delete(WinRmClient.RESOURCE_URI, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector);
+            winrm.delete(WinRmClient.RESOURCE_URI, null, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector);
         } catch (SOAPFaultException soapFault) {
             assertFaultCode(soapFault, WSMAN_FAULT_CODE_SHELL_WAS_NOT_FOUND);
         }

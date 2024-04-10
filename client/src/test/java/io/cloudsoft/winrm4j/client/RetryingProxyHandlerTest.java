@@ -71,7 +71,7 @@ public class RetryingProxyHandlerTest {
         });
         
         try {
-        	winrm.create((Shell)null, "myResourceUri", 0, "myOperationTimeout", (Locale)null, (OptionSetType)null);
+        	winrm.create((Shell)null, "myResourceUri", null, 0, "myOperationTimeout", (Locale)null,(OptionSetType)null);
         	fail("Should have propagated exception");
         } catch (Exception e) {
         	WebServiceException cause = findCause(e, WebServiceException.class);
@@ -96,7 +96,7 @@ public class RetryingProxyHandlerTest {
         	}
         });
         
-    	ResourceCreated actual = winrm.create((Shell)null, "myResourceUri", 0, "myOperationTimeout", (Locale)null, (OptionSetType)null);
+    	ResourceCreated actual = winrm.create((Shell)null, "myResourceUri", null, 0, "myOperationTimeout", (Locale)null, (OptionSetType)null);
     	
         assertSame(actual, result);
         assertEquals(recordingWinrm.calls.size(), 2);
@@ -111,7 +111,7 @@ public class RetryingProxyHandlerTest {
     		return result;
         });
         
-    	ResourceCreated actual = winrm.create((Shell)null, "myResourceUri", 0, "myOperationTimeout", (Locale)null, (OptionSetType)null);
+    	ResourceCreated actual = winrm.create((Shell)null, "myResourceUri", null, 0, "myOperationTimeout", (Locale)null, (OptionSetType)null);
     	
         assertSame(actual, result);
         assertEquals(recordingWinrm.calls.size(), 1);
@@ -125,7 +125,7 @@ public class RetryingProxyHandlerTest {
         });
 
         try {
-        	winrm.create((Shell)null, "myResourceUri", 0, "myOperationTimeout", (Locale)null, (OptionSetType)null);
+        	winrm.create((Shell)null, "myResourceUri", null, 0, "myOperationTimeout", (Locale)null, (OptionSetType)null);
         	fail("Should have propagated exception");
         } catch (Exception e) {
         	NullPointerException cause = findCause(e, NullPointerException.class);
@@ -167,43 +167,43 @@ public class RetryingProxyHandlerTest {
 		}
 		
 		@Override
-		public void delete(String resourceURI, int maxEnvelopeSize, String operationTimeout, Locale locale, SelectorSetType selectorSet) {
-			RecordedCall call = new RecordedCall("delete", Arrays.asList(resourceURI, maxEnvelopeSize, operationTimeout, locale, selectorSet));
+		public void delete(String resourceURI, String sessionId, int maxEnvelopeSize, String operationTimeout, Locale locale, SelectorSetType selectorSet) {
+			RecordedCall call = new RecordedCall("delete", Arrays.asList(resourceURI, sessionId, maxEnvelopeSize, operationTimeout, locale, selectorSet));
 			calls.add(call);
 			handler.apply(call);
 		}
 
 		@Override
-		public ReceiveResponse receive(Receive receive, String resourceURI, int maxEnvelopeSize, String operationTimeout, Locale locale, SelectorSetType selectorSet, OptionSetType optionSet) {
-			RecordedCall call = new RecordedCall("receive", Arrays.asList(receive, resourceURI, maxEnvelopeSize, operationTimeout, locale, selectorSet, optionSet));
+		public ReceiveResponse receive(Receive receive, String resourceURI, String sessionId, int maxEnvelopeSize, String operationTimeout, Locale locale, SelectorSetType selectorSet, OptionSetType optionSet) {
+			RecordedCall call = new RecordedCall("receive", Arrays.asList(receive, resourceURI, sessionId, maxEnvelopeSize, operationTimeout, locale, selectorSet, optionSet));
 			calls.add(call);
 			return (ReceiveResponse) handler.apply(call);
 		}
 
 		@Override
-		public SendResponse send(Send send, String resourceURI, int maxEnvelopeSize, String operationTimeout, Locale locale, SelectorSetType selectorSet, OptionSetType optionSet) {
-			RecordedCall call = new RecordedCall("send", Arrays.asList(send, resourceURI, maxEnvelopeSize, operationTimeout, locale, selectorSet, optionSet));
+		public SendResponse send(Send send, String resourceURI, String sessionId, int maxEnvelopeSize, String operationTimeout, Locale locale, SelectorSetType selectorSet, OptionSetType optionSet) {
+			RecordedCall call = new RecordedCall("send", Arrays.asList(send, resourceURI, sessionId, maxEnvelopeSize, operationTimeout, locale, selectorSet, optionSet));
 			calls.add(call);
 			return (SendResponse) handler.apply(call);
 		}
 
 		@Override
-		public SignalResponse signal(Signal signal, String resourceURI, int maxEnvelopeSize, String operationTimeout, Locale locale, SelectorSetType selectorSet) {
-			RecordedCall call = new RecordedCall("signal", Arrays.asList(signal, resourceURI, maxEnvelopeSize, operationTimeout, locale, selectorSet));
+		public SignalResponse signal(Signal signal, String resourceURI, String sessionId, int maxEnvelopeSize, String operationTimeout, Locale locale, SelectorSetType selectorSet) {
+			RecordedCall call = new RecordedCall("signal", Arrays.asList(signal, resourceURI, sessionId, maxEnvelopeSize, operationTimeout, locale, selectorSet));
 			calls.add(call);
 			return (SignalResponse) handler.apply(call);
 		}
 
 		@Override
-		public CommandResponse command(CommandLine body, String resourceURI, int maxEnvelopeSize, String operationTimeout, Locale locale, SelectorSetType selectorSet, OptionSetType optionSet) {
-			RecordedCall call = new RecordedCall("command", Arrays.asList(body, resourceURI, maxEnvelopeSize, operationTimeout, locale, selectorSet, optionSet));
+		public CommandResponse command(CommandLine body, String resourceURI, String sessionId, int maxEnvelopeSize, String operationTimeout, Locale locale, SelectorSetType selectorSet, OptionSetType optionSet) {
+			RecordedCall call = new RecordedCall("command", Arrays.asList(body, resourceURI, sessionId, maxEnvelopeSize, operationTimeout, locale, selectorSet, optionSet));
 			calls.add(call);
 			return (CommandResponse) handler.apply(call);
 		}
 
 		@Override
-		public ResourceCreated create(Shell shell, String resourceURI, int maxEnvelopeSize, String operationTimeout, Locale locale, OptionSetType optionSet) {
-			RecordedCall call = new RecordedCall("create", Arrays.asList(shell, resourceURI, maxEnvelopeSize, operationTimeout, locale, optionSet));
+		public ResourceCreated create(Shell shell, String resourceURI, String sessionId, int maxEnvelopeSize, String operationTimeout, Locale locale, OptionSetType optionSet) {
+			RecordedCall call = new RecordedCall("create", Arrays.asList(shell, resourceURI, sessionId, maxEnvelopeSize, operationTimeout, locale, optionSet));
 			calls.add(call);
 			return (ResourceCreated) handler.apply(call);
 		}

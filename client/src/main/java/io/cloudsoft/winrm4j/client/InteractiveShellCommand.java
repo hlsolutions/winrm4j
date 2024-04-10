@@ -107,7 +107,7 @@ public class InteractiveShellCommand implements AutoCloseable {
 
         numberOfReceiveCalls = 0;
 
-        CommandResponse cmdResponse = winrm.command(cmdLine, WinRmClient.RESOURCE_URI, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
+        CommandResponse cmdResponse = winrm.command(cmdLine, WinRmClient.RESOURCE_URI, null, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
         String commandId = cmdResponse.getCommandId();
         // reduce the prompt to a simple ">"
         sendCommand(commandId, "@echo off");
@@ -194,7 +194,7 @@ public class InteractiveShellCommand implements AutoCloseable {
 
         numberOfReceiveCalls = 0;
 
-        CommandResponse cmdResponse = winrm.command(cmdLine, WinRmClient.RESOURCE_URI, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
+        CommandResponse cmdResponse = winrm.command(cmdLine, WinRmClient.RESOURCE_URI, null, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
         String commandId = cmdResponse.getCommandId();
         // reduce the prompt to a simple ">"
         sendCommand(commandId, "Function Prompt {\">\"}");
@@ -291,7 +291,7 @@ public class InteractiveShellCommand implements AutoCloseable {
         optSetCmd.getOption().add(optKeepalive);
         try {
             LOG.trace("Sending command data {}: {}", commandId, data);
-            winrm.send(send, WinRmClient.RESOURCE_URI, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
+            winrm.send(send, WinRmClient.RESOURCE_URI, null, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
         } catch (SOAPFaultException soapFault) {
             assertFaultCode(soapFault, WSMAN_FAULT_CODE_OPERATION_TIMEOUT_EXPIRED,
                     retryReceiveAfterOperationTimeout);
@@ -375,7 +375,7 @@ public class InteractiveShellCommand implements AutoCloseable {
             try {
                 numberOfReceiveCalls++;
                 // Fetch the next batch of command's response (maybe not the last one)...
-                ReceiveResponse receiveResponse = winrm.receive(receive, WinRmClient.RESOURCE_URI, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
+                ReceiveResponse receiveResponse = winrm.receive(receive, WinRmClient.RESOURCE_URI, null, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector, optSetCmd);
                 // ... and process the result into the temp writers.
                 getStreams(receiveResponse, tempOut, tempErr);
 
@@ -510,14 +510,14 @@ public class InteractiveShellCommand implements AutoCloseable {
         signal.setCommandId(commandId);
         signal.setCode("http://schemas.microsoft.com/wbem/wsman/1/windows/shell/signal/terminate");
 
-        winrm.signal(signal, WinRmClient.RESOURCE_URI, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector);
+        winrm.signal(signal, WinRmClient.RESOURCE_URI, null, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector);
     }
 
 
     @Override
     public void close() {
         try {
-            winrm.delete(WinRmClient.RESOURCE_URI, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector);
+            winrm.delete(WinRmClient.RESOURCE_URI, null, WinRmClient.MAX_ENVELOPER_SIZE, operationTimeout, locale, shellSelector);
         } catch (SOAPFaultException soapFault) {
             assertFaultCode(soapFault, WSMAN_FAULT_CODE_SHELL_WAS_NOT_FOUND);
         }

@@ -535,7 +535,7 @@ public class WinRmClient implements AutoCloseable {
 
         ResourceCreated resourceCreated = null;
         try {
-            resourceCreated = winrm.create(shell, RESOURCE_URI, MAX_ENVELOPER_SIZE, operationTimeout, locale, optSetCreate);
+            resourceCreated = winrm.create(shell, RESOURCE_URI, null, MAX_ENVELOPER_SIZE, operationTimeout, locale, optSetCreate);
         } catch (RuntimeException e) {
             RetryingProxyHandler.checkForRootErrorAuthorizationLoopAndPropagateAnnotated(e);
             throw e;
@@ -581,7 +581,7 @@ public class WinRmClient implements AutoCloseable {
 
         ResourceCreated resourceCreated = null;
         try {
-            resourceCreated = winrm.create(shell, RESOURCE_URI, MAX_ENVELOPER_SIZE, operationTimeout, locale, optSetCreate);
+            resourceCreated = winrm.create(shell, RESOURCE_URI, null, MAX_ENVELOPER_SIZE, operationTimeout, locale, optSetCreate);
         } catch (RuntimeException e) {
             RetryingProxyHandler.checkForRootErrorAuthorizationLoopAndPropagateAnnotated(e);
             throw e;
