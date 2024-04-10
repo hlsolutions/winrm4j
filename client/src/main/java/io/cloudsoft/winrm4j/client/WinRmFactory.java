@@ -1,8 +1,5 @@
 package io.cloudsoft.winrm4j.client;
 
-import io.cloudsoft.winrm4j.client.encryption.AsyncHttpEncryptionAwareConduitFactory;
-import io.cloudsoft.winrm4j.client.encryption.DecryptAndVerifyInInterceptor;
-import io.cloudsoft.winrm4j.client.encryption.SignAndEncryptOutInterceptor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -10,6 +7,10 @@ import java.util.List;
 import java.util.Map;
 import jakarta.xml.ws.spi.Provider;
 import jakarta.xml.ws.spi.ServiceDelegate;
+
+import io.cloudsoft.winrm4j.client.encryption.AsyncHttpEncryptionAwareConduitFactory;
+import io.cloudsoft.winrm4j.client.encryption.DecryptAndVerifyInInterceptor;
+import io.cloudsoft.winrm4j.client.encryption.SignAndEncryptOutInterceptor;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.interceptor.Interceptor;
@@ -113,6 +114,8 @@ public class WinRmFactory {
             Map<String, Object> properties = new LinkedHashMap<String, Object>();
             List<Interceptor<? extends Message>> outInterceptors = new ArrayList<>();
             List<Interceptor<? extends Message>> inInterceptors = new ArrayList<>();
+            outInterceptors.add(new WsmanMessageIdPatcherOutboundInterceptor());
+            inInterceptors.add(new WsmanMessageIdPatcherInboundInterceptor());
 
             if (builder.payloadEncryptionMode().isPermitted()) {
                 // asymmetry - we need to subclass the conduit factory to get correct encryption after re-auth;
