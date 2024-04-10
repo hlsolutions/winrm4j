@@ -1,36 +1,41 @@
 
 package io.cloudsoft.winrm4j.service.shell;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.datatype.Duration;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAnyElement;
+import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlList;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
-import org.w3c.dom.Element;
 
-import javax.xml.datatype.Duration;
-import java.util.ArrayList;
-import java.util.List;
+import org.w3c.dom.Element;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Shell", propOrder = {
     "shellId",
+    "name",
     "environment",
     "workingDirectory",
     "lifetime",
     "idleTimeout",
     "inputStreams",
     "outputStreams",
+    "creationXml",
     "any"
 })
 public class Shell {
 
-    @XmlElement(name = "ShellId")
+    @XmlAttribute(name = "ShellId")
     @XmlSchemaType(name = "anyURI")
     protected String shellId;
+    @XmlAttribute(name = "Name")
+    protected String name;
     @XmlElement(name = "Environment")
     protected EnvironmentVariableList environment;
     @XmlElement(name = "WorkingDirectory")
@@ -45,6 +50,10 @@ public class Shell {
     @XmlList
     @XmlElement(name = "OutputStreams")
     protected List<String> outputStreams;
+
+    @XmlElement(name = "creationXml", namespace = "http://schemas.microsoft.com/powershell")
+    protected byte[] creationXml;
+
     @XmlAnyElement(lax = true)
     protected List<Object> any;
 
@@ -70,6 +79,14 @@ public class Shell {
      */
     public void setShellId(String value) {
         this.shellId = value;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
@@ -224,6 +241,14 @@ public class Shell {
             outputStreams = new ArrayList<String>();
         }
         return this.outputStreams;
+    }
+
+    public byte[] getCreationXml() {
+        return creationXml;
+    }
+
+    public void setCreationXml(byte[] creationXml) {
+        this.creationXml = creationXml;
     }
 
     /**
