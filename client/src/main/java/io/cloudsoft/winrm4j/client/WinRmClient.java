@@ -552,6 +552,15 @@ public class WinRmClient implements AutoCloseable {
         return new ShellCommand(winrm, shellId, operationTimeout, retryReceiveAfterOperationTimeout, locale);
     }
 
+    public PowershellRemoteClient createPowershellRemoteClient() {
+        return new PowershellRemoteClient(
+                winrm,
+                operationTimeout,
+                retryReceiveAfterOperationTimeout,
+                locale
+        );
+    }
+
     /**
      * Creates an interactive Shell resource on the server, available for executing commands through the {@link InteractiveShellCommand} object.
      * {@link InteractiveShellCommand#close()} the returned object after usage.
