@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -111,6 +112,7 @@ public class PsrpPipelineResponseMessageParser {
 			final var sb = new StringBuilder();
 			for (int i = 0; i < items.getLength(); i++) {
 				Optional.ofNullable(items.item(i).getTextContent())
+						.map(PsrpPipelineResponseMessageParser::applyEncodingPatches)
 						.ifPresent(sb::append);
 				sb.append("\r\n");
 			}
@@ -118,6 +120,28 @@ public class PsrpPipelineResponseMessageParser {
 		} catch (Exception e) {
 			throw new IllegalStateException("Failed decoding pipeline output", e);
 		}
+	}
+
+	/**
+	 * The string output contains several unicode characters like `_x000A_` which
+	 * needed to be converted back.
+	 *
+	 * @param text encoded value
+	 * @return decoded value
+	 */
+	private static String applyEncodingPatches(final String text) {
+		final var pattern = Pattern.compile("(_x[0-9a-fA-F]{4}_)");
+		final var matcher = pattern.matcher(text);
+		final var result = new StringBuilder();
+		int lastEnd = 0;
+		while (matcher.find()) {
+			result.append(text, lastEnd, matcher.start());
+			final var match = matcher.group().split("_x")[1].substring(0, 4);
+			result.append((char) Integer.parseInt(match, 16));
+			lastEnd = matcher.end();
+		}
+		result.append(text.substring(lastEnd));
+		return result.toString().strip();
 	}
 
 	String decodeHostCall(final PsrpMessage message) {
