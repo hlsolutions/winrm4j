@@ -18,6 +18,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.cxf.transport.commons_text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -70,7 +71,7 @@ public class PsrpMessageFactory {
 				pipelineId,
 				PsrpMessageType.CREATE_PIPELINE,
 				PsrpDestination.SERVER,
-				TEMPLATES.get("create_pipeline").replace(":command", command)
+				TEMPLATES.get("create_pipeline").replace(":command", StringEscapeUtils.escapeHtml4(command))
 		);
 	}
 
