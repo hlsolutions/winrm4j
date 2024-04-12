@@ -559,12 +559,8 @@ public class PowershellRemoteClient implements AutoCloseable {
 					maxEnvelopeSize = config.getMaxEnvelopeSizekb() * 1024;
 					LOG.trace("Dynamically evaluated maxEnvelopeSize = '{}'", maxEnvelopeSize);
 				} catch (final SOAPFaultException e) {
-					if ("Access is denied.".equals(e.getMessage())) {
-						LOG.debug("Failed to request winrm config for maxEnvelopeSizeKb, switching to default", e);
-						maxEnvelopeSize = PsrpMessageFragmenter.DEFAULT_BLOB_LENGTH;
-					} else {
-						throw e;
-					}
+					LOG.debug("Failed to request winrm config for maxEnvelopeSizeKb, switching to default", e);
+					maxEnvelopeSize = PsrpMessageFragmenter.DEFAULT_BLOB_LENGTH;
 				}
 			}
 			return maxEnvelopeSize;
