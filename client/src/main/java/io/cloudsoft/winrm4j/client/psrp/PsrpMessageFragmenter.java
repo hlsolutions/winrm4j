@@ -11,7 +11,7 @@ public class PsrpMessageFragmenter {
 
     private static final Logger LOG = LoggerFactory.getLogger(PsrpMessageFragmenter.class);
 
-    public static final int DEFAULT_BLOB_LENGTH = 32_768;
+    public static final int DEFAULT_BLOB_LENGTH = 153_600;
 
     private final int blobLength;
     private long objectId;
