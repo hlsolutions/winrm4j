@@ -23,7 +23,7 @@ public class PsrpMessageDefragmenter {
         fragmentCache.computeIfAbsent(fragment.objectId(), x -> new ArrayList<>())
                 .add(fragment);
 
-        if (fragment.lastFragment()) {
+        if (messageCompleted(fragment)) {
             try (final var baos = new ByteArrayOutputStream()) {
                 final var fragments = fragmentCache.get(fragment.objectId());
                 for (final var f : fragments) {
@@ -39,6 +39,21 @@ public class PsrpMessageDefragmenter {
         }
 
         return Optional.empty();
+    }
+
+    private boolean messageCompleted(final PsrpFragment fragment) {
+        final var fragments = fragmentCache.get(fragment.objectId());
+        return fragments.stream()
+                // last fragment must exist
+                .filter(PsrpFragment::lastFragment)
+                .findFirst()
+                // fragmentId is incremented, started by 0
+                .filter(lastFragment -> fragments.size() == fragment.fragmentId() + 1)
+                .isPresent();
+    }
+
+    public boolean hasFragments() {
+        return !fragmentCache.isEmpty();
     }
 
 }

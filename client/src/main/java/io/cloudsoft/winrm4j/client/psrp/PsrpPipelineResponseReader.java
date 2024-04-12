@@ -51,7 +51,7 @@ public class PsrpPipelineResponseReader {
 								  final boolean waitForDoneState) {
 		LOG.trace("Receive PSRP output");
 		final var defragmenter = new PsrpMessageDefragmenter();
-		return read0(receive, optionSetType, waitForDoneState)
+		final var messages = read0(receive, optionSetType, waitForDoneState)
 				.flatMap(response -> response
 						.getStream()
 						.stream()
@@ -64,6 +64,10 @@ public class PsrpPipelineResponseReader {
 				.flatMap(fragment -> defragmenter.defragment(fragment).stream())
 				.peek(message -> LOG.trace("Read PSRP message: {}", message))
 				.toList();
+		if (defragmenter.hasFragments()) {
+			LOG.debug("Incomplete inbound PSRP message fragments left");
+		}
+		return messages;
 	}
 
 	Stream<ReceiveResponse> read0(final Receive receive,
