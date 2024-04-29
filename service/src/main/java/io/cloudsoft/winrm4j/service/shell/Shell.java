@@ -51,7 +51,9 @@ public class Shell {
     @XmlElement(name = "OutputStreams")
     protected List<String> outputStreams;
 
-    @XmlElement(name = "creationXml", namespace = "http://schemas.microsoft.com/powershell")
+    // Windows 2012 does not support namespaced tag ¯\_(ツ)_/¯
+    //@XmlElement(name = "creationXml", namespace = "http://schemas.microsoft.com/powershell")
+    @XmlElement(name = "creationXml", namespace = "")
     protected byte[] creationXml;
 
     @XmlAnyElement(lax = true)
