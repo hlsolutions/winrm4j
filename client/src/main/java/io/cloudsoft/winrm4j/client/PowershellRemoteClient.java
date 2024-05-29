@@ -207,12 +207,18 @@ public class PowershellRemoteClient implements AutoCloseable {
 		final OptionSetType optSetCreate = new OptionSetType();
 		// OptionSet.mustUnderstand=true is REQUIRED
 		optSetCreate.setMustUnderstand(true);
+
 		OptionType optProtocolVersion = new OptionType();
 		optProtocolVersion.setName("protocolversion");
 		optProtocolVersion.setValue("2.3");
 		// Option.MustComply=true is REQUIRED
 		optProtocolVersion.setMustComply(true);
 		optSetCreate.getOption().add(optProtocolVersion);
+
+		OptionType optWinrsNoProfile = new OptionType();
+		optWinrsNoProfile.setName("WINRS_NOPROFILE");
+		optWinrsNoProfile.setValue("TRUE");
+		optSetCreate.getOption().add(optWinrsNoProfile);
 
 		shell.setCreationXml(PsrpUtils.buildOpenShellPayload(runspacePoolId, getFragmenter()));
 
