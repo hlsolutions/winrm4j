@@ -67,7 +67,7 @@
     <mockwebserver.version>4.10.0</mockwebserver.version>
 
     <!-- Production -->
-    <cxf.version>4.0.0</cxf.version>
+    <cxf.version>4.0.7</cxf.version>
     <cxf.java2ws.plugin.version>${cxf.version}</cxf.java2ws.plugin.version>
     <httpcomponents.httpcore.version>4.4.16</httpcomponents.httpcore.version>
     <httpcomponents.httpasyncclient.version>4.1.5</httpcomponents.httpasyncclient.version>
